@@ -32,7 +32,6 @@
   .warn { color:var(--accent); font-size:14px; min-height:1em; margin:0 0 8px; }
   .result { display:flex; flex-wrap:wrap; gap:4px 18px; align-items:baseline; }
   tr.hl { outline:2px solid var(--accent); outline-offset:-2px; }
-  tr.out td { color:var(--muted); font-style:italic; }
   /* responsive: wide screens show the two calculators side by side */
   @media (min-width:1100px) {
     .wrap { max-width:1160px; grid-template-columns:1fr 1fr; align-items:start; }
@@ -82,7 +81,7 @@
     <h2>1RM จากน้ำหนักที่ยกได้ (Brzycki)</h2>
     <div class="inputs">
       <label>น้ำหนักที่ยก (kg)<input id="w" type="number" inputmode="decimal" value="50" min="1" step="0.5"></label>
-      <label>จำนวนครั้งที่ยกได้ (1–15)<input id="reps" type="number" inputmode="numeric" value="8" min="1" max="15"></label>
+      <label>จำนวนครั้งที่ยกได้ (1–10)<input id="reps" type="number" inputmode="numeric" value="8" min="1" max="10"></label>
     </div>
     <p class="warn" id="rmWarn"></p>
     <p class="result"><span>1RM โดยประมาณ = <b id="orm"></b> kg</span><span>3RM = <b id="rm3"></b></span><span>5RM = <b id="rm5"></b></span></p>
@@ -90,7 +89,7 @@
       <thead><tr><th>ยกได้ (ครั้ง)</th><th>%1RM</th><th>น้ำหนัก (kg)</th></tr></thead>
       <tbody id="rmBody"></tbody>
     </table>
-    <p class="note"><b>สูตร Brzycki (1RM):</b> 1RM = W ÷ [1.0278 − (0.0278 × reps)], ใช้ได้เมื่อยก ≤ 10 ครั้ง [ACSM's Guidelines 12th Ed., p.1069] แถว 11–15 (ตัวเอียงสีจาง) อยู่นอกช่วงนี้ ใช้ดูคร่าว ๆ เท่านั้น<br>
+    <p class="note"><b>สูตร Brzycki (1RM):</b> 1RM = W ÷ [1.0278 − (0.0278 × reps)], ใช้ได้เมื่อยก ≤ 10 ครั้ง [ACSM's Guidelines 12th Ed., p.1069]<br>
     <b>สูตร Brzycki (%1RM):</b> %1RM = 102.78 − 2.78 × reps [ACSM's Foundations of Strength Training and Conditioning 2011, Table 18.7]<br>
     ค่าประมาณจากน้ำหนักที่ไม่ใช่ max อาจสูงกว่าจริง [NSCA PT, p.359]</p>
   </section>
@@ -123,18 +122,16 @@ function hr() {
 
 function rm() {
   const w = +$("w").value, r = Math.round(+$("reps").value);
-  $("rmWarn").textContent = !w || r < 1 || r > 15 ? "ใส่น้ำหนัก และจำนวนครั้ง 1–15" : "";
-  const bad = !!$("rmWarn").textContent;
-  if (r > 10 && !bad) $("rmWarn").textContent = "เกิน 10 ครั้ง: สูตร Brzycki ใช้ได้เมื่อยก ≤ 10 ครั้ง ค่าที่ได้เป็นค่าประมาณที่คลาดเคลื่อนมากขึ้น";
-  if (bad) { $("rmBody").innerHTML = ""; $("orm").textContent = $("rm3").textContent = $("rm5").textContent = "-"; return; }
+  $("rmWarn").textContent = !w || r < 1 || r > 10 ? "ใส่น้ำหนัก และจำนวนครั้ง 1–10" : "";
+  if ($("rmWarn").textContent) { $("rmBody").innerHTML = ""; $("orm").textContent = $("rm3").textContent = $("rm5").textContent = "-"; return; }
   const one = brzycki(w, r);
   $("orm").textContent = one.toFixed(1);
   $("rm3").textContent = (one * pct1RM(3) / 100).toFixed(1);
   $("rm5").textContent = (one * pct1RM(5) / 100).toFixed(1);
   let rows = "";
-  for (let n = 1; n <= 15; n++) {
+  for (let n = 1; n <= 10; n++) {
     const p = pct1RM(n);
-    rows += `<tr class="${n === r ? "hl" : ""}${n > 10 ? " out" : ""}"><td>${n}</td><td>${p.toFixed(1)}%</td><td class="big">${(one * p / 100).toFixed(1)}</td></tr>`;
+    rows += `<tr${n === r ? ' class="hl"' : ""}><td>${n}</td><td>${p.toFixed(1)}%</td><td class="big">${(one * p / 100).toFixed(1)}</td></tr>`;
   }
   $("rmBody").innerHTML = rows;
 }
