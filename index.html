@@ -1,0 +1,123 @@
+<!doctype html>
+<html lang="th">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Target HR และ 1RM</title>
+<style>
+  :root { --bg:#fafaf7; --fg:#1d1d1b; --muted:#77776f; --panel:#fff; --line:#e4e4de; --accent:#d9480f;
+          --z1:#e7f0fb; --z2:#dcefe1; --z3:#fbf3d6; --z4:#fde3cf; --z5:#f9d4d4; }
+  @media (prefers-color-scheme: dark) {
+    :root:not([data-theme="light"]) { --bg:#161615; --fg:#ececea; --muted:#9a9a93; --panel:#20201e; --line:#33332f; --accent:#ff8a4c;
+      --z1:#1f2b38; --z2:#1f3226; --z3:#38331c; --z4:#3d2a1c; --z5:#3d2020; }
+  }
+  :root[data-theme="dark"] { --bg:#161615; --fg:#ececea; --muted:#9a9a93; --panel:#20201e; --line:#33332f; --accent:#ff8a4c;
+      --z1:#1f2b38; --z2:#1f3226; --z3:#38331c; --z4:#3d2a1c; --z5:#3d2020; }
+  * { box-sizing:border-box; }
+  body { margin:0; padding:16px; background:var(--bg); color:var(--fg); font-family:"Sarabun","Leelawadee UI",Tahoma,sans-serif; }
+  .wrap { max-width:720px; margin:0 auto; display:grid; gap:16px; }
+  .card { background:var(--panel); border:1px solid var(--line); border-radius:12px; padding:16px; }
+  h1 { font-size:20px; margin:0; }
+  h2 { font-size:17px; margin:0 0 12px; }
+  .inputs { display:flex; flex-wrap:wrap; gap:12px; margin-bottom:12px; }
+  label { display:flex; flex-direction:column; font-size:14px; color:var(--muted); gap:4px; }
+  input { font:inherit; font-size:18px; width:120px; padding:6px 8px; border:1px solid var(--line); border-radius:8px; background:var(--bg); color:var(--fg); }
+  table { width:100%; border-collapse:collapse; font-variant-numeric:tabular-nums; }
+  th, td { padding:8px; border-bottom:1px solid var(--line); text-align:left; }
+  th { font-size:13px; color:var(--muted); font-weight:500; }
+  td.big { font-size:18px; font-weight:600; }
+  .note { font-size:13px; color:var(--muted); margin:10px 0 0; line-height:1.5; }
+  .result { font-size:18px; margin:0 0 10px; }
+  .result b { color:var(--accent); font-size:22px; }
+  .warn { color:var(--accent); font-size:14px; min-height:1em; margin:0 0 8px; }
+</style>
+</head>
+<body>
+<div class="wrap">
+  <h1>ตารางสำเร็จ: Target HR และ 1RM</h1>
+
+  <section class="card">
+    <h2>Target Heart Rate (Karvonen)</h2>
+    <div class="inputs">
+      <label>อายุ (ปี)<input id="age" type="number" value="30" min="10" max="100"></label>
+      <label>RHR (ครั้ง/นาที)<input id="rhr" type="number" value="70" min="30" max="120"></label>
+    </div>
+    <p class="warn" id="hrWarn"></p>
+    <p class="result">HRmax = <b id="hrmax"></b> &nbsp; HRR = <b id="hrr"></b></p>
+    <table>
+      <thead><tr><th>Zone</th><th>ระดับ (ACSM)</th><th>%HRR</th><th>HR เป้าหมาย (bpm)</th></tr></thead>
+      <tbody id="hrBody"></tbody>
+    </table>
+    <p class="note"><b>สูตร APMHR:</b> HRmax = 220 − อายุ | <b>สูตร HRR:</b> HRR = HRmax − RHR | <b>สูตร Karvonen:</b> THR = (HRR × %) + RHR [NSCA's Essentials of Personal Training 2011, p.393–394]<br>
+    ระดับ zone และ %HRR: ACSM's Guidelines 12th Ed., Table 5.2<br>
+    ใช้ไม่ได้กับคนที่กินยาที่มีผลต่อชีพจร เช่น beta blocker [NSCA PT, p.393]</p>
+  </section>
+
+  <section class="card">
+    <h2>1RM จากน้ำหนักที่ยกได้ (Brzycki)</h2>
+    <div class="inputs">
+      <label>น้ำหนักที่ยก (kg)<input id="w" type="number" value="50" min="1" step="0.5"></label>
+      <label>จำนวนครั้งที่ยกได้ (1–10)<input id="reps" type="number" value="8" min="1" max="10"></label>
+    </div>
+    <p class="warn" id="rmWarn"></p>
+    <p class="result">1RM โดยประมาณ = <b id="orm"></b> kg &nbsp; 3RM = <b id="rm3"></b> &nbsp; 5RM = <b id="rm5"></b></p>
+    <table>
+      <thead><tr><th>ยกได้ (ครั้ง)</th><th>%1RM</th><th>น้ำหนัก (kg)</th></tr></thead>
+      <tbody id="rmBody"></tbody>
+    </table>
+    <p class="note"><b>สูตร Brzycki (1RM):</b> 1RM = W ÷ [1.0278 − (0.0278 × reps)], ใช้ได้เมื่อยก ≤ 10 ครั้ง [ACSM's Guidelines 12th Ed., p.1069]<br>
+    <b>สูตร Brzycki (%1RM):</b> %1RM = 102.78 − 2.78 × reps [ACSM's Foundations of Strength Training and Conditioning 2011, Table 18.7]<br>
+    ค่าประมาณจากน้ำหนักที่ไม่ใช่ max อาจสูงกว่าจริง [NSCA PT, p.359]</p>
+  </section>
+</div>
+<script>
+const ZONES = [
+  [1, "Very light", 0, 30],
+  [2, "Light", 30, 40],
+  [3, "Moderate", 40, 60],
+  [4, "Vigorous", 60, 90],
+  [5, "Near-maximal to maximal", 90, 100],
+];
+const $ = id => document.getElementById(id);
+const thr = (hrr, rhr, pct) => Math.round(hrr * pct / 100 + rhr);
+const brzycki = (w, r) => w / (1.0278 - 0.0278 * r);
+const pct1RM = r => 102.78 - 2.78 * r;
+const bg = n => `style="background:var(--z${n})"`;
+
+function hr() {
+  const age = +$("age").value, rhr = +$("rhr").value, max = 220 - age, hrr = max - rhr;
+  $("hrWarn").textContent = !age || !rhr || hrr <= 0 ? "ใส่อายุและ RHR ให้ถูกต้อง (RHR ต้องต่ำกว่า HRmax)" : "";
+  if ($("hrWarn").textContent) { $("hrBody").innerHTML = ""; $("hrmax").textContent = $("hrr").textContent = "-"; return; }
+  $("hrmax").textContent = max; $("hrr").textContent = hrr;
+  $("hrBody").innerHTML = ZONES.map(([z, name, lo, hi]) => {
+    const pctTxt = z === 1 ? "< 30%" : z === 5 ? "≥ 90%" : `${lo}–${hi - 1}%`;
+    const bpm = z === 1 ? `< ${thr(hrr, rhr, 30)}` : z === 5 ? `≥ ${thr(hrr, rhr, 90)}` : `${thr(hrr, rhr, lo)}–${thr(hrr, rhr, hi - 1)}`;
+    return `<tr ${bg(z)}><td class="big">Zone ${z}</td><td>${name}</td><td>${pctTxt}</td><td class="big">${bpm}</td></tr>`;
+  }).join("");
+}
+
+function rm() {
+  const w = +$("w").value, r = Math.round(+$("reps").value);
+  $("rmWarn").textContent = !w || r < 1 || r > 10 ? "ใส่น้ำหนัก และจำนวนครั้ง 1–10" : "";
+  if ($("rmWarn").textContent) { $("rmBody").innerHTML = ""; $("orm").textContent = $("rm3").textContent = $("rm5").textContent = "-"; return; }
+  const one = brzycki(w, r);
+  $("orm").textContent = one.toFixed(1);
+  $("rm3").textContent = (one * pct1RM(3) / 100).toFixed(1);
+  $("rm5").textContent = (one * pct1RM(5) / 100).toFixed(1);
+  let rows = "";
+  for (let n = 1; n <= 10; n++) {
+    const p = pct1RM(n);
+    rows += `<tr${n === r ? ' style="outline:2px solid var(--accent)"' : ""}><td>${n}</td><td>${p.toFixed(1)}%</td><td class="big">${(one * p / 100).toFixed(1)}</td></tr>`;
+  }
+  $("rmBody").innerHTML = rows;
+}
+
+["age", "rhr"].forEach(id => $(id).addEventListener("input", hr));
+["w", "reps"].forEach(id => $(id).addEventListener("input", rm));
+hr(); rm();
+
+// self-check: NSCA PT p.394 example (age 40, RHR 70 -> 50% = 125, 85% = 164)
+console.assert(thr(180 - 70, 70, 50) === 125 && thr(110, 70, 85) === 164, "Karvonen check failed");
+</script>
+</body>
+</html>
